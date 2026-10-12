@@ -26,6 +26,7 @@
     <script>
       let score = 0;
       let duration = 120;
+      let failed = false;
       let curProblem;
       let startTime;
       let timer;
@@ -75,14 +76,10 @@
         }
       }
 
-      function endGame(message) {
-        clearInterval(timer);
-        startDiv.style.display = 'none';
-        endDiv.style.display = 'block';
-        endScore.textContent = message;
-      }
-
       answerEl.addEventListener('input', function(e) {
+        if (failed) {
+          return;
+        }
         const value = e.target.value;
         const answer = curProblem.answer.toString();
         if (answer === value) {
@@ -90,7 +87,8 @@
           score++;
           scoreEl.textContent = 'Score: ' + score;
         } else if (!answer.startsWith(value)) {
-          endGame('Failed: ' + curProblem.problemText);
+          failed = true;
+          clearInterval(timer);
         }
       });
 
@@ -100,7 +98,10 @@
         const d = duration - Math.floor((Date.now() - startTime) / 1000);
         timeLeftEl.textContent = 'Seconds left: ' + d;
         if (d <= 0) {
-          endGame('Score: ' + score);
+          clearInterval(timer);
+          startDiv.style.display = 'none';
+          endDiv.style.display = 'block';
+          endScore.textContent = 'Score: ' + score;
         }
       }, 1000);
 
