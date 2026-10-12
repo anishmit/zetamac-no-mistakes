@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Arithmetic Game – Online Speed Drill</title>
+    <link href="app.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="game">
+      <span class="left">Seconds left: 120</span>
+      <span class="correct">Score: 0</span>
+      <div class="banner">
+        <div class="start">
+          <span class="problem"></span>
+          =
+          <input class="answer" />
+        </div>
+        <div class="end">
+          <p class="correct">Score: 0</p>
+          <p>
+            <a id="retry" href="game.html">Try again</a>
+            or <a href="index.html">change settings</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+    <script>
+      let score = 0;
+      let duration = 120;
+      let curProblem;
+      let startTime;
+      let timer;
+
+      let problemEl = document.querySelector('.problem');
+      let answerEl = document.querySelector('.answer');
+      let timeLeftEl = document.querySelector('.left');
+      let scoreEl = document.querySelector('span.correct');
+      let startDiv = document.querySelector('.start');
+      let endDiv = document.querySelector('.end');
+      let endScore = document.querySelector('p.correct');
+
+      function rand(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function newProblem() {
+        const operation = rand(0, 3);
+        let problemText;
+        let answer;
+        if (operation === 0) {
+          const a = rand(2, 100);
+          const b = rand(2, 100);
+          problemText = a + ' + ' + b;
+          answer = a + b;
+        } else if (operation === 1) {
+          const a = rand(2, 100);
+          const b = rand(2, 100);
+          problemText = a + b + ' - ' + a;
+          answer = b;
+        } else if (operation === 2) {
+          const a = rand(2, 12);
+          const b = rand(2, 100);
+          problemText = a + ' × ' + b;
+          answer = a * b;
+        } else {
+          const a = rand(2, 12);
+          const b = rand(2, 100);
+          problemText = a * b + ' ÷ ' + a;
+          answer = b;
+        }
+        problemEl.textContent = problemText;
+        answerEl.value = '';
+        curProblem = {
+          problemText: problemText,
+          answer: answer
+        }
+      }
+
+      function endGame(message) {
+        clearInterval(timer);
+        startDiv.style.display = 'none';
+        endDiv.style.display = 'block';
+        endScore.textContent = message;
+      }
+
+      answerEl.addEventListener('input', function(e) {
+        const value = e.target.value;
+        const answer = curProblem.answer.toString();
+        if (answer === value) {
+          newProblem();
+          score++;
+          scoreEl.textContent = 'Score: ' + score;
+        } else if (!answer.startsWith(value)) {
+          endGame('Failed: ' + curProblem.problemText);
+        }
+      });
+
+      startTime = Date.now();
+      newProblem();
+      timer = setInterval(function () {
+        const d = duration - Math.floor((Date.now() - startTime) / 1000);
+        timeLeftEl.textContent = 'Seconds left: ' + d;
+        if (d <= 0) {
+          endGame('Score: ' + score);
+        }
+      }, 1000);
+
+      answerEl.focus();
+    </script>
+  </body>
+</html>
