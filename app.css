@@ -77,8 +77,6 @@ a:active {
 }
 #game .banner p.pace {
   display: none;
-  font-size: 20px;
-  line-height: 30px;
 }
 #game .banner.wide {
   height: auto;
