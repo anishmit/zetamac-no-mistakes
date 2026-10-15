@@ -16,6 +16,7 @@
         </div>
         <div class="end">
           <p class="correct">Score: 0</p>
+          <p class="pace">Pace: 0</p>
         </div>
       </div>
     </div>
@@ -37,6 +38,7 @@
       let startDiv = document.querySelector('.start');
       let endDiv = document.querySelector('.end');
       let endScore = document.querySelector('p.correct');
+      let paceEl = document.querySelector('p.pace');
 
       function rand(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -81,6 +83,8 @@
         sessionStorage.setItem('game', JSON.stringify({
           score: score,
           failed: failed,
+          typed: answerEl.value,
+          typedLength: typedLength,
           pace: pace,
           startTime: startTime,
           failTime: failTime,
@@ -112,7 +116,11 @@
         const answer = curProblem.answer.toString();
         if (failed) {
           if (answer === value) {
-            endGame('Failed: ' + score + ' (' + pace + ')');
+            paceEl.textContent = 'Pace: ' + pace;
+            paceEl.style.display = 'block';
+            endGame('Failed: ' + score);
+          } else {
+            save();
           }
           return;
         }
@@ -120,17 +128,16 @@
           newProblem();
           score++;
           scoreEl.textContent = 'Score: ' + score;
-          save();
         } else if (value.length <= typedLength || !answer.startsWith(value)) {
           failed = true;
           failTime = Date.now();
           pace = Math.floor(score * duration * 1000 / Math.max(curProblem.startTime - startTime, 1));
           clearInterval(timer);
           showTimeLeft(failTime);
-          save();
         } else {
           typedLength = value.length;
         }
+        save();
       });
 
       const saved = sessionStorage.getItem('game');
@@ -143,7 +150,8 @@
         failTime = state.failTime;
         curProblem = state.curProblem;
         problemEl.textContent = curProblem.problemText;
-        answerEl.value = '';
+        answerEl.value = state.typed;
+        typedLength = state.typedLength;
         scoreEl.textContent = 'Score: ' + score;
       } else {
         startTime = Date.now();
