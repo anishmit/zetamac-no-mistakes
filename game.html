@@ -27,6 +27,8 @@
       let score = 0;
       let duration = 120;
       let failed = false;
+      let typedLength = 0;
+      let pace;
       let curProblem;
       let startTime;
       let timer;
@@ -70,6 +72,7 @@
         }
         problemEl.textContent = problemText;
         answerEl.value = '';
+        typedLength = 0;
         curProblem = {
           problemText: problemText,
           answer: answer
@@ -86,17 +89,22 @@
       answerEl.addEventListener('input', function(e) {
         const value = e.target.value;
         const answer = curProblem.answer.toString();
-        if (answer === value) {
-          if (failed) {
-            endGame('Failed: ' + score);
-          } else {
-            newProblem();
-            score++;
-            scoreEl.textContent = 'Score: ' + score;
+        if (failed) {
+          if (answer === value) {
+            endGame('Failed: ' + score + ' (' + pace + ')');
           }
-        } else if (!answer.startsWith(value)) {
+          return;
+        }
+        if (answer === value) {
+          newProblem();
+          score++;
+          scoreEl.textContent = 'Score: ' + score;
+        } else if (value.length <= typedLength || !answer.startsWith(value)) {
           failed = true;
+          pace = Math.floor(score * duration * 1000 / Math.max(Date.now() - startTime, 1));
           clearInterval(timer);
+        } else {
+          typedLength = value.length;
         }
       });
 
