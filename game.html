@@ -16,10 +16,6 @@
         </div>
         <div class="end">
           <p class="correct">Score: 0</p>
-          <p>
-            <a id="retry" href="game.html">Try again</a>
-            or <a href="index.html">change settings</a>.
-          </p>
         </div>
       </div>
     </div>
@@ -31,6 +27,7 @@
       let pace;
       let curProblem;
       let startTime;
+      let failTime;
       let timer;
 
       let problemEl = document.querySelector('.problem');
@@ -80,11 +77,34 @@
         }
       }
 
+      function save() {
+        sessionStorage.setItem('game', JSON.stringify({
+          score: score,
+          failed: failed,
+          pace: pace,
+          startTime: startTime,
+          failTime: failTime,
+          curProblem: curProblem
+        }));
+      }
+
+      function showTimeLeft(now) {
+        timeLeftEl.textContent = 'Seconds left: ' + (duration - Math.floor((now - startTime) / 1000));
+      }
+
       function endGame(message) {
         clearInterval(timer);
+        sessionStorage.removeItem('game');
         startDiv.style.display = 'none';
         endDiv.style.display = 'block';
         endScore.textContent = message;
+      }
+
+      function tick() {
+        showTimeLeft(Date.now());
+        if (Date.now() - startTime >= duration * 1000) {
+          endGame('Score: ' + score);
+        }
       }
 
       answerEl.addEventListener('input', function(e) {
@@ -100,24 +120,43 @@
           newProblem();
           score++;
           scoreEl.textContent = 'Score: ' + score;
+          save();
         } else if (value.length <= typedLength || !answer.startsWith(value)) {
           failed = true;
+          failTime = Date.now();
           pace = Math.floor(score * duration * 1000 / Math.max(curProblem.startTime - startTime, 1));
           clearInterval(timer);
+          showTimeLeft(failTime);
+          save();
         } else {
           typedLength = value.length;
         }
       });
 
-      startTime = Date.now();
-      newProblem();
-      timer = setInterval(function () {
-        const d = duration - Math.floor((Date.now() - startTime) / 1000);
-        timeLeftEl.textContent = 'Seconds left: ' + d;
-        if (d <= 0) {
-          endGame('Score: ' + score);
-        }
-      }, 1000);
+      const saved = sessionStorage.getItem('game');
+      if (saved) {
+        const state = JSON.parse(saved);
+        score = state.score;
+        failed = state.failed;
+        pace = state.pace;
+        startTime = state.startTime;
+        failTime = state.failTime;
+        curProblem = state.curProblem;
+        problemEl.textContent = curProblem.problemText;
+        answerEl.value = '';
+        scoreEl.textContent = 'Score: ' + score;
+      } else {
+        startTime = Date.now();
+        newProblem();
+        save();
+      }
+
+      if (failed) {
+        showTimeLeft(failTime);
+      } else {
+        tick();
+        timer = setInterval(tick, 1000);
+      }
 
       answerEl.focus();
     </script>
