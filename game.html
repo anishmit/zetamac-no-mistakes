@@ -75,7 +75,8 @@
         typedLength = 0;
         curProblem = {
           problemText: problemText,
-          answer: answer
+          answer: answer,
+          startTime: Date.now()
         }
       }
 
@@ -101,7 +102,7 @@
           scoreEl.textContent = 'Score: ' + score;
         } else if (value.length <= typedLength || !answer.startsWith(value)) {
           failed = true;
-          pace = Math.floor(score * duration * 1000 / Math.max(Date.now() - startTime, 1));
+          pace = Math.floor(score * duration * 1000 / Math.max(curProblem.startTime - startTime, 1));
           clearInterval(timer);
         } else {
           typedLength = value.length;
